@@ -1,6 +1,6 @@
 class GroupsController < ApplicationController
   before_action :authenticate_user! , only: [:new, :create, :edit, :update, :destroy]
-  before_action :find_group_and_check_permission, only: [:edit, :update, :destroy]
+  before_action :find_group_and_check_permission, only: [:edit, :update, :destroy, :join, :quit]
 
   def index
     @groups = Group.all
@@ -43,6 +43,27 @@ class GroupsController < ApplicationController
     redirect_to groups_path, alert: "Group deleted"
   end
 
+  def join
+    @group = Group.find(params[:id])
+    if !current_user.is_member_of?(@group)
+      current_user.join!(@group)
+      flash[:notice] = "加入成功"
+    else
+      flash[:warning] = "你已經是成員！"
+    end
+    redirect_to group_path(@group)
+  end
+
+  def quit
+    @group = Group.find(params[:id])
+    if !current_user.is_member_of?(@group)
+      current_user.quit!(@group)
+      flash[:notice] = "已退出！"
+    else
+      flash[:warning] = "你不是本版成員，無法退出"
+    end
+    redirect_to group_path(@group)
+  end
 
   private
 
